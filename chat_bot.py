@@ -84,15 +84,15 @@ def save_destination(message):
     try:
         get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig)
         bot.send_message(message.chat.id, 'Ваш билет:')
-        send_document(message)
+        send_document(message, destinat)
     except Exception as exc:
         bot.send_message(message.chat.id, 'Кажется, на эти даты билетов нет.')
         print(exc)
 
 
-def send_document(message):
-    doc_name = name[message.from_user.id] + '_' + surname[message.from_user.id] + "_ticket.pdf"
-    document = open(doc_name, 'rb')
+def send_document(message, destinat):
+    doc_name = name[message.from_user.id] + '_' + surname[message.from_user.id] + destinat + "_ticket.pdf"
+    document = open('tickets/' + doc_name, 'rb')
     bot.send_document(message.from_user.id, document)
 
 

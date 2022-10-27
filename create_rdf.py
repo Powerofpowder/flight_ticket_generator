@@ -149,7 +149,7 @@ class PDF(FPDF):
 
 
 def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
-    pdf_name = user_name + '_' + user_surname + "_ticket.pdf"
+    pdf_name = user_name + '_' + user_surname + destinat + "_ticket.pdf"
     # print(data[0]['departure_at'])
     dep = data[0]['departure_at'][:-6].replace('T', ' ')
     dep_date = str(dep).split(' ')[0]
@@ -161,6 +161,8 @@ def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     arr = str(datetime.strptime(dep, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=duration))
     arr_date = arr.split()[0]
     arr_time = arr.split()[1].split(':00')[0]
+    if len(str(arr_time)) == 2:
+        arr_time += ':00'
     order_number = f'{random.randrange(1, 10 ** 6):06}'
     airline = data[0]['airline']
     flight_num = airline + '-' + str(data[0]['flight_number'])
@@ -199,4 +201,4 @@ def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     pdf.take_off_pic()
     pdf.landing_pic()
     pdf.price_info(price)
-    pdf.output(pdf_name, 'F')
+    pdf.output('tickets/' + pdf_name, 'F')
