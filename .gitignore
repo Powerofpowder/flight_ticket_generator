@@ -1,0 +1,7 @@
+*.pyc
+venv
+.env
+.idea
+.DS_Store
+tickets
+__pycache__

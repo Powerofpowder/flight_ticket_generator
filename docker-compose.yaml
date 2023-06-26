@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    container_name: ticket_bot
+    build:
+      context: .
+    command: python chat_bot.py
+    volumes:
+      - ./src:/app
+    env_file:
+      - .env
+    restart: always

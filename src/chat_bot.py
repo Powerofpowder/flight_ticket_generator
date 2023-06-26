@@ -1,9 +1,11 @@
+import os
+import requests
 import telebot
 
 from create_rdf import get_ticket_pdf
-from main import get_info_by_user, get_flight_info
+from main import get_flight_info, get_info_by_user
 
-token = '1900724040:AAGedVyVclJKMqogC6ZrAyQ1TMCqxmJFU6M'
+token = os.getenv("TOKEN")
 bot = telebot.TeleBot(token)
 cities = {}
 flight_date = {}
@@ -12,6 +14,7 @@ surname = {}
 passport = {}
 origin_city = {}
 destination_city = {}
+flight_info = {}
 
 
 @bot.message_handler(content_types=['text'])
@@ -25,14 +28,32 @@ def get_cities(message):
 
 def get_date(message):
     cities[message.from_user.id] = message.text
-    bot.send_message(message.chat.id, 'Когда хотите полететь? Пример ответа: 2022-11 или 2022-11-01')
-    bot.register_next_step_handler(message, get_name)
+    cities_list = message.text.split()
+    c = "%20".join(cities_list)
+    r = requests.get(f'https://www.travelpayouts.com/widgets_suggest_params?q={c}')
+    flight_info[message.from_user.id] = r.json()
+    if not r.json():
+        bot.send_message(message.chat.id, 'Скорее всего ошибка в написании города. Попробуйте снова.')
+    else:
+        bot.send_message(message.chat.id, 'Когда хотите полететь? Пример ответа: 2022-11 или 2022-11-01')
+        bot.register_next_step_handler(message, get_name)
 
 
 def get_name(message):
     flight_date[message.from_user.id] = message.text
-    bot.send_message(message.chat.id, 'Ваше имя латиницей (как в пасспорте)')
-    bot.register_next_step_handler(message, get_surname)
+    available_flights = flight_info[message.from_user.id]
+    if not (
+        get_flight_info(
+            origin=available_flights['origin']['iata'],
+            destination=available_flights['destination']['iata'],
+            departure_date=message.text
+        )
+    ):
+        bot.send_message(message.chat.id, 'На эти даты нет билетов.')
+        # bot.register_next_step_handler(message, get_cities)
+    else:
+        bot.send_message(message.chat.id, 'Ваше имя латиницей (как в паспорте)')
+        bot.register_next_step_handler(message, get_surname)
 
 
 def get_surname(message):
@@ -97,5 +118,3 @@ def send_document(message, destinat):
 
 
 bot.polling(none_stop=True, interval=0)
-
-

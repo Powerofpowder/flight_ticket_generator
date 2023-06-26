@@ -26,7 +26,7 @@ class PDF(FPDF):
         self.text(
             45, 28,
             # align='C',
-            f"Booking {order_number} is confirmed.",
+            f"Order {order_number} is confirmed.",
         )
         self.set_top_margin(10)
 
@@ -40,9 +40,9 @@ class PDF(FPDF):
         self.text(45, 19, txt_2)
         self.set_margins(0, 0)
         # self.multi_cell(0, 22, txt_2)
-        self.text(150, 15, 'ORDER RECEIPT /E-TICKET')
+        self.text(150, 15, 'E-TICKET')
         self.text(45, 37, "PASSENGER'S NAME AND SURNAME / ID")
-        self.text(150, 37, 'DATA / ORDER NUMBER')
+        self.text(150, 37, 'DATE / ORDER NUMBER')
         self.text(110, 82, 'Economy (A)')
         self.text(110, 86, 'Baggage: C1 pc 20kg per passenger.')
         self.text(110, 90, 'Hand baggage: 1 pc 7kg per passenger.')
@@ -119,6 +119,10 @@ class PDF(FPDF):
         self.set_font('Arial', 'B', 14)
         self.text(150, 48, order_number)
 
+    def add_e_ticket(self, e_ticket):
+        self.set_font('Arial', 'B', 14)
+        self.text(150, 20, e_ticket)
+
     def user_info(
             self, dep_date, dep_time,
             flight_num, airline, duration,
@@ -128,14 +132,14 @@ class PDF(FPDF):
             origin_airport, destination_airport
     ):
         self.set_font('Arial', style='B', size=14)
-        e_ticket = str(random.randint(10, 99)) + ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        # print('etic ', e_ticket)
         self.text(57, 65, dep_date)
         self.text(57, 71, dep_time)
         self.text(57, 113, arr_date)
         self.text(57, 119, arr_time)
         self.set_font('Arial', style='', size=10)
         self.text(57, 80, flight_num)
-        self.text(57, 86, e_ticket.upper())
+        # self.text(57, 86, e_ticket.upper())
         self.text(57, 92, airline)
         self.text(57, 98, duration)
         self.text(110, 65, origin)
@@ -150,6 +154,7 @@ class PDF(FPDF):
 
 def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     pdf_name = user_name + '_' + user_surname + destinat + "_ticket.pdf"
+    print(data, user_name, user_surname, passport_id, destinat, orig)
     # print(data[0]['departure_at'])
     dep = data[0]['departure_at'][:-6].replace('T', ' ')
     dep_date = str(dep).split(' ')[0]
@@ -164,6 +169,7 @@ def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     if len(str(arr_time)) == 2:
         arr_time += ':00'
     order_number = f'{random.randrange(1, 10 ** 6):06}'
+    e_ticket = str(random.randint(10, 99)) + ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     airline = data[0]['airline']
     flight_num = airline + '-' + str(data[0]['flight_number'])
     origin_city = data[0]['origin']
@@ -173,6 +179,7 @@ def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     price = data[0]['price']
     pdf = PDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
+    # print('заказ ', order_number)
     pdf.titles(order_number=order_number)
     pdf.logo()
     pdf.rect(166, 60, w=1500 / 80, h=950 / 80, style='S')
@@ -181,6 +188,7 @@ def get_ticket_pdf(data, user_name, user_surname, passport_id, destinat, orig):
     pdf.add_passport(passport_id)
     pdf.add_date()
     pdf.add_order_number(order_number)
+    pdf.add_e_ticket(e_ticket)
     pdf.add_line()
     pdf.common_info()
     pdf.user_info(

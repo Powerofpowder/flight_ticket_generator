@@ -60,8 +60,8 @@
 # )
 # print(response)
 # # r = requests.get('http://api.travelpayouts.com/v1/flight_search_results?uuid=%ebe4fa71-bc07-40df-ae4e-4b72116583da%')
-
-
+import string
+import random
 import requests
 from datetime import datetime
 
@@ -87,11 +87,14 @@ def get_flight_info(origin, destination, departure_date):
             'token': 'b57898fb118834aae6aacb1a65aa22e8',
         }
     )
+    print(r.json())
     return r.json()['data']
 
 
 def get_info_by_user(cities, date_str):
     # date_obj = datetime.strptime(date_str, '%d/%m/%y')
+    cities_list = cities.split()
+    cities = "%20".join(cities_list)
     r = requests.get(f'https://www.travelpayouts.com/widgets_suggest_params?q={cities}')
     available_flights = r.json()
     origin_code = available_flights['origin']['iata']
@@ -99,6 +102,6 @@ def get_info_by_user(cities, date_str):
     return origin_code, destination_code, date_str
 
 
-# data = get_flight_info(origin='MOW', destination="LED", departure_date='2022-11')
+# data = get_flight_info(origin='IST', destination="UFA", departure_date='2023-07-10')
 # print(data)
 # get_ticket_pdf(data, 'Alimova', 'Anastasia', '6337388', 'Moscow', 'Kazan')
